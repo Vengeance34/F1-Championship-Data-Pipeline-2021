@@ -1,0 +1,202 @@
+{
+  "name": "F1 Top Drivers 2021",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        16
+      ],
+      "id": "648332a4-0eff-4de4-8937-e373ceeafd68",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://f1api.dev/api/2021/drivers-championship",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -48,
+        16
+      ],
+      "id": "7aa17921-d6ce-4623-8500-57a1a7fa6abf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function node (All-items)\n// Returns full driver objects (from the drivers_championship entries) where points > 170\n\nconst out = [];\nconst MAX_OUTPUT = 2000;\n\nfunction extractArray(obj) {\n  if (Array.isArray(obj)) return obj;\n  if (obj && typeof obj === 'object') {\n    for (const key of ['drivers_championship','drivers','data','items','results','response','body','raw']) {\n      if (Array.isArray(obj[key])) return obj[key];\n    }\n  }\n  return null;\n}\n\nfunction toNumber(v) {\n  if (v === null || v === undefined) return null;\n  const m = String(v).match(/-?\\d+(\\.\\d+)?/);\n  if (!m) return null;\n  const n = Number(m[0]);\n  return Number.isFinite(n) ? n : null;\n}\n\nfor (const itm of items) {\n  const json = itm.json ?? {};\n  const arr = extractArray(json);\n  if (!arr) continue;\n  for (const entry of arr) {\n    if (!entry || typeof entry !== 'object') continue;\n    if (out.length >= MAX_OUTPUT) break;\n    const pts = toNumber(entry.points ?? entry.Points ?? (entry.driver && entry.driver.points) ?? (entry.standings && entry.standings.points));\n    if (pts === null) continue;\n    if (pts > 150) out.push({ json: entry });\n  }\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        16
+      ],
+      "id": "0ad18c3e-ef92-41ce-a012-3ced41ae64f1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KB53CP3tmgi9QjRXJpGui879S-OtWwca-3pIkKqVrgo",
+          "mode": "list",
+          "cachedResultName": "F1 - 2021",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KB53CP3tmgi9QjRXJpGui879S-OtWwca-3pIkKqVrgo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "F1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KB53CP3tmgi9QjRXJpGui879S-OtWwca-3pIkKqVrgo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        16
+      ],
+      "id": "fbf78956-0faa-4997-a6f0-6e8409d9b338",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2vozRRNWqGK2ji9c",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "F1 - 2021",
+          "sheetName": "F1"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        16
+      ],
+      "id": "8eca5df8-e07a-4f1b-973e-5ab644ec5c24",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "sendTo": "bdileepabd@gmail.com",
+        "subject": "F1 - Scores 2021",
+        "emailType": "text",
+        "message": "Hi There !\nThese Are The Details of F1 - Season 2021",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "senderName": "Dileep"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        16
+      ],
+      "id": "14cd1a41-4620-4e7a-b4b6-f1c8359fb70e",
+      "name": "Send a message",
+      "webhookId": "00ced154-18ca-472b-9f8c-a57ebb1795c6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ESti8ymZZGYKpylU",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6116cadf-7544-4092-ac78-113e21e381dd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c85aab2c6795f410b61ff10e81cd82504bb81e5111728a979055582c2e316cd5"
+  },
+  "id": "C05YTqUMGPhld8g4",
+  "tags": []
+}
